@@ -103,3 +103,30 @@ e:
 f:
 
 wc -w < info.txt
+
+# Variablen
+
+Bearbeite diesen Code
+BIRTHDATE="Jan 1, 2000"
+Presents=10
+BIRTHDAY=$(date -d "$BIRTHDATE" +%A)
+
+Testcode
+
+if [ "$BIRTHDATE" == "Jan 1, 2000" ] ; then
+    echo "BIRTHDATE ist korrekt, es ist $BIRTHDATE"
+else
+    echo "BIRTHDATE ist nicht korrekt"
+fi
+if [ $Presents == 10 ] ; then
+    echo "Ich habe $Presents Geschenke bekommen."
+else
+    echo "Presents ist nicht korrekt"
+fi
+if [ "$BIRTHDAY" == "Saturday" ]||[ "$BIRTHDAY" == "Samstag" ] ; then
+    echo "Ich wurde an einem $BIRTHDAY geboren."
+else
+    echo "BIRTHDAY ist nicht korrekt"
+fi
+
+
