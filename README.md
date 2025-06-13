@@ -130,3 +130,51 @@ else
 fi
 
 
+# Verzweigung
+
+#!/bin/bash
+
+DATEI="daten.txt"
+
+# Prüfen, ob die Datei existiert
+if [ ! -e "$DATEI" ]; then
+  echo "[FEHLER] Datei nicht vorhanden."
+elif [ ! -r "$DATEI" ]; then
+  echo "[WARNUNG] Datei existiert, aber ist nicht lesbar."
+else
+  # Wortanzahl in der Datei ermitteln
+  WORTANZAHL=$(wc -w < "$DATEI")
+
+  if [ "$WORTANZAHL" -lt 20 ]; then
+    echo "[HINWEIS] Datei ist sehr klein."
+  elif [ "$WORTANZAHL" -le 100 ]; then
+    echo "[OK] Datei hat akzeptable Grösse."
+  else
+    echo "[ACHTUNG] Datei ist ungewöhnlich gross."
+  fi
+fi
+
+
+# Schleifen
+
+## Aufgabe 1
+
+#!/bin/bash
+
+NUMBERS=(951 402 984 651 360 69 408 319 601 485 980 507 725 547 544 615 83 165 141 501 263 617 865 575 219 39>
+echo "Zahlen größer als 400:"
+for zahl in "${NUMBERS[@]}"; do
+  if [ "$zahl" -gt 400 ]; then
+    echo "$zahl"
+  fi
+done
+
+## Aufgabe 2
+
+#!/bin/bash
+
+echo "Jede zweite IP-Adresse von 192.168.10.50 bis 192.168.10.70:"
+for ((i=50; i<=70; i+=2)); do
+  echo "192.168.10.$i"
+done
+
