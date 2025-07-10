@@ -7,7 +7,7 @@
 
 #!/bin/bash
 
-# Absolute Pfade für Befehle (damit Cron sie findet)
+# Absolute Pfade zu benötigten Programmen (wichtig für Cron)
 BC=/usr/bin/bc
 WHO=/usr/bin/who
 WC=/usr/bin/wc
@@ -16,14 +16,14 @@ DATE=/bin/date
 DF=/bin/df
 CAT=/bin/cat
 
-# Pfad zu deinem config file (immer absolut!)
+# Pfad zur Konfigurationsdatei
 CONFIG="/home/donart/server-monitor/config.cfg"
 
-# Log- und Report-Dateien
+# Pfade für Log- und Report-Dateien
 LOGFILE="/home/donart/server-monitor/system_monitor.log"
 REPORT="/home/donart/server-monitor/system_report_$($DATE '+%Y-%m-%d_%H-%M').log"
 
-# Config laden (mit vollem Pfad)
+# Konfigurationsdatei einbinden, sonst abbrechen
 if [ -f "$CONFIG" ]; then
   source "$CONFIG"
 else
@@ -31,16 +31,16 @@ else
   exit 1
 fi
 
-# Systemwerte ermitteln
-CPU_LOAD=$($CAT /proc/loadavg | awk '{print $1}')
-RAM_USED=$(free -m | awk '/Mem:/ {print $3}')
-DISK_FREE=$($DF / | awk 'NR==2 {print $4}')
-USERS=$($WHO | $WC -l)
-ETH0_STATUS=$(cat /sys/class/net/eth0/operstate 2>/dev/null || echo "unknown")
-WLAN0_STATUS=$(cat /sys/class/net/wlan0/operstate 2>/dev/null || echo "unknown")
-FAILED_LOGINS=$($GREP "Failed password" /var/log/auth.log 2>/dev/null | $GREP "$($DATE '+%b %e %H:%M' -d '5 minutes ago')" | $WC -l)
+# Systemwerte erfassen
+CPU_LOAD=$($CAT /proc/loadavg | awk '{print $1}')                           # CPU-Auslastung (1 Min)
+RAM_USED=$(free -m | awk '/Mem:/ {print $3}')                               # RAM-Verbrauch in MB
+DISK_FREE=$($DF / | awk 'NR==2 {print $4}')                                 # Freier Speicherplatz auf /
+USERS=$($WHO | $WC -l)                                                      # Anzahl eingeloggter Benutzer
+ETH0_STATUS=$(cat /sys/class/net/eth0/operstate 2>/dev/null || echo "unknown")   # Status von eth0
+WLAN0_STATUS=$(cat /sys/class/net/wlan0/operstate 2>/dev/null || echo "unknown") # Status von wlan0
+FAILED_LOGINS=$($GREP "Failed password" /var/log/auth.log 2>/dev/null | $GREP "$($DATE '+%b %e %H:%M' -d '5 minutes ago')" | $WC -l) # Fehlgeschlagene Logins der letzten 5 Minuten
 
-# Bericht schreiben
+# Report schreiben
 {
   echo "CPU-Auslastung (1 min): $CPU_LOAD"
   echo "RAM-Verbrauch (MB): $RAM_USED"
@@ -48,17 +48,14 @@ FAILED_LOGINS=$($GREP "Failed password" /var/log/auth.log 2>/dev/null | $GREP "$
   echo "Anzahl angemeldete Benutzer: $USERS"
   echo "Netzwerkstatus eth0: $ETH0_STATUS"
   echo "Netzwerkstatus wlan0: $WLAN0_STATUS"
-   echo "Fehlgeschlagene Loginversuche (letzte 5 min): $FAILED_LOGINS"
+  echo "Fehlgeschlagene Loginversuche (letzte 5 min): $FAILED_LOGINS"
   echo "-------------------------------"
 } > "$REPORT"
 
-# Warnung prüfen und Mail senden
-# Warnungen prüfen und ggf. E-Mail senden
-
-# CPU-Last
-if (( $(echo "$CPU_LOAD > $CPU_WARN" | $BC -l) )); then
+# CPU-Warnung prüfen
+if (( $(echo "$CPU_LOAD > $CPU_WARN" | $BC -l) )); then # bc -l: wird verwendet, da bash mit Fließkommazahlen nicht direkt rechnen kann.
   WARNUNG="WARNUNG: CPU-Auslastung über $CPU_WARN (aktuell: $CPU_LOAD)"
-  echo "$WARNUNG" | tee -a "$REPORT"
+  echo "$WARNUNG" | tee -a "$REPORT"  # Nachricht wird an Konsole und Report ausgegeben (tee -a)
   {
     echo "Subject: ALARM: Hohe CPU-Auslastung auf $(hostname)"
     echo "To: $ALARM_EMAIL"
@@ -67,10 +64,10 @@ if (( $(echo "$CPU_LOAD > $CPU_WARN" | $BC -l) )); then
   } | /usr/bin/msmtp --from=default -t
 fi
 
-# RAM-Verbrauch
+# RAM-Warnung prüfen
 if (( $RAM_USED > $RAM_WARN )); then
   WARNUNG="WARNUNG: RAM-Verbrauch über $RAM_WARN MB (aktuell: $RAM_USED MB)"
-  echo "$WARNUNG" | tee -a "$REPORT"
+  echo "$WARNUNG" | tee -a "$REPORT" # Nachricht wird an Konsole und Report ausgegeben (tee -a)
   {
     echo "Subject: ALARM: RAM-Verbrauch zu hoch auf $(hostname)"
     echo "To: $ALARM_EMAIL"
@@ -79,6 +76,5 @@ if (( $RAM_USED > $RAM_WARN )); then
   } | /usr/bin/msmtp --from=default -t
 fi
 
-
-# Skript-Ausführung protokollieren
+# Log-Eintrag zur Skriptausführung
 echo "$($DATE '+%Y-%m-%d %H:%M:%S') - Skript ausgeführt, CPU: $CPU_LOAD, RAM: $RAM_USED MB" >> "$LOGFILE"
