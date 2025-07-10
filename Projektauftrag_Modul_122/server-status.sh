@@ -53,7 +53,7 @@ FAILED_LOGINS=$($GREP "Failed password" /var/log/auth.log 2>/dev/null | $GREP "$
 } > "$REPORT"
 
 # CPU-Warnung prüfen
-if (( $(echo "$CPU_LOAD > $CPU_WARN" | $BC -l) )); then # bc -l: wird verwendet, da bash mit Fließkommazahlen nicht direkt rechnen kann.
+if (( $(echo "$CPU_LOAD > $CPU_WARN" | $BC -l) )); then # bc -l: wird verwendet, da bash mit Fliesskommazahlen nicht direkt rechnen kann.
   WARNUNG="WARNUNG: CPU-Auslastung über $CPU_WARN (aktuell: $CPU_LOAD)"
   echo "$WARNUNG" | tee -a "$REPORT"  # Nachricht wird an Konsole und Report ausgegeben (tee -a)
   {
