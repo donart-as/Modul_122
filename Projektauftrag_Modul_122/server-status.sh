@@ -1,5 +1,5 @@
 # Script Name:  server-status.sh
-# Beschreibung: Hauptskript zum Ausführen aller Checks
+# Beschreibung: Hauptskript zum Ausfuehren aller Checks
 # Autor:        Donart Aslani
 # Version:      1.2
 # Datum:        2025-07-11
@@ -7,19 +7,19 @@
 
 #!/bin/bash
 
-# Absolute Pfade zu benötigten Programmen (wichtig für Cron)
-BC=/usr/bin/bc       # Taschenrechner für Rechenoperationen
+# Absolute Pfade zu benoetigten Programmen (wichtig fuer Cron)
+BC=/usr/bin/bc       # Taschenrechner fuer Rechenoperationen
 WHO=/usr/bin/who     # Zeigt angemeldete Benutzer an
-WC=/usr/bin/wc       # Zählt Zeilen, Wörter, Zeichen
+WC=/usr/bin/wc       # Zaehlt Zeilen, Woerter, Zeichen
 GREP=/bin/grep       # Sucht Textmuster in Dateien/Texten
-DATE=/bin/date       # Zeigt aktuelles Datum & Uhrzeit
+DATE=/bin/date       # Zeigt aktuelles Datum und Uhrzeit
 DF=/bin/df           # Zeigt Speicherplatz der Festplatten
 CAT=/bin/cat         # Gibt Dateiinhalt aus / verbindet Dateien
 
 # Pfad zur Konfigurationsdatei
 CONFIG="/home/donart/server-monitor/config.cfg"
 
-# Pfade für Log- und Report-Dateien
+# Pfade fuer Log- und Report-Dateien
 LOGFILE="/home/donart/server-monitor/system_monitor.log"
 REPORT="/home/donart/server-monitor/system_report_$($DATE '+%Y-%m-%d_%H-%M').log"
 
@@ -52,10 +52,10 @@ FAILED_LOGINS=$($GREP "Failed password" /var/log/auth.log 2>/dev/null | $GREP "$
   echo "-------------------------------"
 } > "$REPORT"
 
-# CPU-Warnung prüfen
-if (( $(echo "$CPU_LOAD > $CPU_WARN" | $BC -l) )); then # bc -l: wird verwendet, da bash mit Fliesskommazahlen nicht direkt rechnen kann.
-  WARNUNG="WARNUNG: CPU-Auslastung über $CPU_WARN (aktuell: $CPU_LOAD)"
-  echo "$WARNUNG" | tee -a "$REPORT"  # Nachricht wird an Konsole und Report ausgegeben (tee -a)
+# CPU-Warnung pruefen
+if (( $(echo "$CPU_LOAD > $CPU_WARN" | $BC -l) )); then # bc -l: wird verwendet, da bash nicht direkt mit Kommazahlen rechnet
+  WARNUNG="WARNUNG: CPU-Auslastung ueber $CPU_WARN (aktuell: $CPU_LOAD)"
+  echo "$WARNUNG" | tee -a "$REPORT"  # Nachricht wird an Konsole und Report ausgegeben
   {
     echo "Subject: ALARM: Hohe CPU-Auslastung auf $(hostname)"
     echo "To: $ALARM_EMAIL"
@@ -64,10 +64,10 @@ if (( $(echo "$CPU_LOAD > $CPU_WARN" | $BC -l) )); then # bc -l: wird verwendet,
   } | /usr/bin/msmtp --from=default -t
 fi
 
-# RAM-Warnung prüfen
+# RAM-Warnung pruefen
 if (( $RAM_USED > $RAM_WARN )); then
-  WARNUNG="WARNUNG: RAM-Verbrauch über $RAM_WARN MB (aktuell: $RAM_USED MB)"
-  echo "$WARNUNG" | tee -a "$REPORT" # Nachricht wird an Konsole und Report ausgegeben (tee -a)
+  WARNUNG="WARNUNG: RAM-Verbrauch ueber $RAM_WARN MB (aktuell: $RAM_USED MB)"
+  echo "$WARNUNG" | tee -a "$REPORT"  # Nachricht wird an Konsole und Report ausgegeben
   {
     echo "Subject: ALARM: RAM-Verbrauch zu hoch auf $(hostname)"
     echo "To: $ALARM_EMAIL"
@@ -76,5 +76,5 @@ if (( $RAM_USED > $RAM_WARN )); then
   } | /usr/bin/msmtp --from=default -t
 fi
 
-# Log-Eintrag zur Skriptausführung
-echo "$($DATE '+%Y-%m-%d %H:%M:%S') - Skript ausgeführt, CPU: $CPU_LOAD, RAM: $RAM_USED MB" >> "$LOGFILE"
+# Log-Eintrag zur Skriptausfuehrung
+echo "$($DATE '+%Y-%m-%d %H:%M:%S') - Skript ausgefuehrt, CPU: $CPU_LOAD, RAM: $RAM_USED MB" >> "$LOGFILE"
