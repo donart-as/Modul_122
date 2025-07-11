@@ -8,13 +8,13 @@
 #!/bin/bash
 
 # Absolute Pfade zu benötigten Programmen (wichtig für Cron)
-BC=/usr/bin/bc
-WHO=/usr/bin/who
-WC=/usr/bin/wc
-GREP=/bin/grep
-DATE=/bin/date
-DF=/bin/df
-CAT=/bin/cat
+BC=/usr/bin/bc       # Taschenrechner für Rechenoperationen
+WHO=/usr/bin/who     # Zeigt angemeldete Benutzer an
+WC=/usr/bin/wc       # Zählt Zeilen, Wörter, Zeichen
+GREP=/bin/grep       # Sucht Textmuster in Dateien/Texten
+DATE=/bin/date       # Zeigt aktuelles Datum & Uhrzeit
+DF=/bin/df           # Zeigt Speicherplatz der Festplatten
+CAT=/bin/cat         # Gibt Dateiinhalt aus / verbindet Dateien
 
 # Pfad zur Konfigurationsdatei
 CONFIG="/home/donart/server-monitor/config.cfg"
@@ -32,10 +32,10 @@ else
 fi
 
 # Systemwerte erfassen
-CPU_LOAD=$($CAT /proc/loadavg | awk '{print $1}')                           # CPU-Auslastung (1 Min)
-RAM_USED=$(free -m | awk '/Mem:/ {print $3}')                               # RAM-Verbrauch in MB
-DISK_FREE=$($DF / | awk 'NR==2 {print $4}')                                 # Freier Speicherplatz auf /
-USERS=$($WHO | $WC -l)                                                      # Anzahl eingeloggter Benutzer
+CPU_LOAD=$($CAT /proc/loadavg | awk '{print $1}')                                # CPU-Auslastung (1 Min)
+RAM_USED=$(free -m | awk '/Mem:/ {print $3}')                                    # RAM-Verbrauch in MB
+DISK_FREE=$($DF / | awk 'NR==2 {print $4}')                                      # Freier Speicherplatz auf /
+USERS=$($WHO | $WC -l)                                                           # Anzahl eingeloggter Benutzer
 ETH0_STATUS=$(cat /sys/class/net/eth0/operstate 2>/dev/null || echo "unknown")   # Status von eth0
 WLAN0_STATUS=$(cat /sys/class/net/wlan0/operstate 2>/dev/null || echo "unknown") # Status von wlan0
 FAILED_LOGINS=$($GREP "Failed password" /var/log/auth.log 2>/dev/null | $GREP "$($DATE '+%b %e %H:%M' -d '5 minutes ago')" | $WC -l) # Fehlgeschlagene Logins der letzten 5 Minuten
